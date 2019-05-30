@@ -43,7 +43,7 @@ public class Transactions {
 
 
     public Option<Transactions> isTxnTimeInLastSixtySeconds(long currentMillis) throws InvalidParseException, OldTransactionException {
-        long diff = (currentMillis - dateTimeConverter.converToTimeStamp(timestamp));
+        long diff = (currentMillis - dateTimeConverter.convertToTimeStamp(timestamp));
         System.out.println(currentMillis +"   ----  "+ timestamp);
         if (diff<0) {throw new InvalidParseException("Transaction Time is in future");}
 

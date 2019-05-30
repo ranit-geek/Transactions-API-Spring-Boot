@@ -8,18 +8,18 @@ import com.n26.entities.Statistics;
 import com.n26.entities.Transactions;
 import com.n26.helpers.BigDecimalConverter;
 import com.n26.helpers.DateTimeConverter;
-import com.sun.org.apache.xpath.internal.operations.Bool;
+
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.time.Instant;
-import java.util.Optional;
+import lombok.extern.slf4j.Slf4j;
 
 import javaslang.concurrent.Future;
 import javaslang.control.Option;
 
+
 @Service
+@Slf4j
 public class TransactionService {
 
     @Autowired
@@ -31,14 +31,14 @@ public class TransactionService {
     @Autowired
     private BigDecimalConverter bigDecimalConverter;
 
+    /**
+     * @return Asynchronously sends the transaction to the StatisticalService layer to save it and
+     * add it in the buffer/cache.transaction is not older than 60 seconds.If its older than 60
+     * seconds it rejects it.
+     */
     public Option<Statistics> saveTransaction(Transactions transactions,Long currentTime) throws InvalidParseException, OldTransactionException {
 
-        // check whether the transaction is from last sixty seconds which returns a Option<T>
-        // if Option<T> is a success, asynchronously save the stats data using Future abstraction by passing it to stats service layer
-        // if Option<T> is a None, signifies it is a older transaction, so return Option.none
-
-
-        bigDecimalConverter.covertStringToBigDecimal(transactions.getAmount());  //@TODO check
+        bigDecimalConverter.covertStringToBigDecimal(transactions.getAmount());
         return transactions.isTxnTimeInLastSixtySeconds(currentTime)
                 .flatMap(txn ->Future.of(() -> statisticsService.saveStats(txn)).toOption())
                 .orElse(() -> Option.none());
@@ -46,6 +46,7 @@ public class TransactionService {
 
     public Boolean deleteTxnFromCache()
     {
+        log.info("Clearing transactions cache and statistics summery");
         statisticsService.clearStatsSummery();
         return transactionCache.clearCache();
     }

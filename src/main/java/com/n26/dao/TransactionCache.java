@@ -4,65 +4,47 @@ package com.n26.dao;
 import com.n26.helpers.BigDecimalSummaryStatistics;
 
 import org.springframework.stereotype.Repository;
+import lombok.extern.slf4j.Slf4j;
 
 import java.math.BigDecimal;
 import java.util.concurrent.ConcurrentHashMap;
 
-import javaslang.collection.HashMap;
-import javaslang.control.Option;
+
 
 @Repository
+@Slf4j
 public class TransactionCache {
 
     private ConcurrentHashMap<Long, BigDecimal> perSecondStatBuckets = new ConcurrentHashMap<>();
 
-    public BigDecimal upsertStatsInCache(Long timeKey, BigDecimal value){
+    /**
+     * @param timeKey timestamp of transaction to be added in millis (UTC)
+     * @param value amount of transaction
+     * @return saves the incoming transactions
+     */
+    public BigDecimal insertStatsInCache(Long timeKey, BigDecimal value){
 
-        // try to get the existing timestamp from cache.If the result is Option.Some, it indicates that the key is present in cache
-        // where we update the existing stats, else create a new bucket for the new timestamp in cache
-//        BigDecimalSummaryStatistics stats = getFromCache(timeKey)
-//                .map(existingPerSecStat -> {
-//                    existingPerSecStat.accept(value);
-//                    return existingPerSecStat;
-//                })
-//                .getOrElse(() -> {
-//                    BigDecimalSummaryStatistics newPerSecondStatistic = new BigDecimalSummaryStatistics();
-//                    newPerSecondStatistic.accept(value);
-//                    return newPerSecondStatistic;
-//                });
-
-           return perSecondStatBuckets.putIfAbsent(timeKey, value);
-
-//        return stats;
+        log.info("Adding Txn to cache::  timestamp:"+timeKey+"  amount:"+value);
+        return perSecondStatBuckets.put(timeKey, value);
     }
 
-    /**
-     * @param timeKey
-     * @return get the summary for the specified key from cache if exists else return None monad type
-     */
-//    public Option<BigDecimalSummaryStatistics> getFromCache(Long timeKey){
-//        return Option.of(perSecondStatBuckets.get(timeKey));
-//    }
 
 
     /**
-     * @param timeKey
-     * @return removeFromCache the timeKey if present in perSecStatBuckets and return Option.Some
-     * if timeKey is not present it returns Option.None
+     * @param timeKey current timestamp(UTC)
+     * @return it compares current timestamp with timestamps in cache and it deletes all entries
+     * older than 60 seconds with respect to the incoming current timestamp and returns true if
+     * any transaction deleted of false if no transaction deleted
      */
     public boolean removeFromCache(Long timeKey){
-
-        // the operation is wrapped in Option<T> monad, so that even if the function remove throws a NPE due to null key, the
-        // resultant output of the function will be None which is more typesafe
 
         int size= perSecondStatBuckets.size();
         for (Long key : perSecondStatBuckets.keySet()){
             if(timeKey-key>60000){
-
+                log.info("Found older transaction:: removing timestamp:"+key);
                 perSecondStatBuckets.remove(key);
             }
         }
-
         return size==perSecondStatBuckets.size()?false:true;
     }
 
@@ -70,21 +52,22 @@ public class TransactionCache {
      * @return aggregate all the statistics data (used while recalculation)
      */
     public BigDecimalSummaryStatistics aggregate(){
-//        return HashMap.ofAll(perSecondStatBuckets)
-//                .foldLeft(new BigDecimalSummaryStatistics(), (acc, perSecondStat) -> {
-//                    acc.combine(perSecondStat._2());
-//                    return acc;
-//                });
-
+        log.info("calculating aggregated statistics from cache");
         return this.perSecondStatBuckets.values().stream().collect(BigDecimalSummaryStatistics.statistics());
 
     }
 
-
+    /**
+     * @return checks if the cache is empty
+     */
     public boolean isCacheEmpty(){return perSecondStatBuckets.isEmpty();}
 
+    /**
+     * @return clears the cache and sends true if its empty or false if its not
+     */
     public boolean clearCache()
     {
+        log.info("Clearing transactions cache");
         perSecondStatBuckets.clear();
         return this.isCacheEmpty();
     }

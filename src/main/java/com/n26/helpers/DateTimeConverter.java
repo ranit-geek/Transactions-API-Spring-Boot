@@ -12,7 +12,7 @@ public class DateTimeConverter {
 
     public static final long MILLIS_FOR_ONE_SECOND = 1000;
 
-    public static Long converToTimeStamp(String dateTime) throws InvalidParseException {
+    public static Long convertToTimeStamp(String dateTime) throws InvalidParseException {
         Instant instant;
         try {
             instant = Instant.parse(dateTime);
