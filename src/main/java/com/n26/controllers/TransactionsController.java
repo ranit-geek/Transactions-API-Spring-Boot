@@ -21,7 +21,7 @@ import javaslang.concurrent.Future;
 import javaslang.control.Option;
 import lombok.extern.slf4j.Slf4j;
 
-@RestController("transactions")
+@RestController
 @Slf4j
 public class TransactionsController {
 
@@ -34,7 +34,7 @@ public class TransactionsController {
      * @return saves the incoming transaction data
      */
 
-    @RequestMapping(method = RequestMethod.POST)
+    @RequestMapping(value = "/transactions",method = RequestMethod.POST)
     public ResponseEntity saveTransaction(@RequestBody Transactions transaction) throws InvalidParseException, OldTransactionException {
 
         Option<Statistics> maybeStatsSummary = transactionService.saveTransaction(transaction,Instant.now().toEpochMilli());
@@ -47,7 +47,7 @@ public class TransactionsController {
      * @return deletes all existing transactions
      */
 
-    @RequestMapping(method = RequestMethod.DELETE)
+    @RequestMapping(value = "/transactions",method = RequestMethod.DELETE)
     public ResponseEntity deleteAllTxn() {
         transactionService.deleteTxnFromCache();
         return new ResponseEntity(HttpStatus.NO_CONTENT);
