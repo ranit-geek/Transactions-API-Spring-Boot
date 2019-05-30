@@ -47,7 +47,7 @@ public class StatisticsService {
      * @return Saves the current transaction in statistical summery as well as transaction cache
      * and returns updated statistical summery
      */
-    synchronized Statistics saveStats(Transactions transaction) throws InvalidParseException {
+    public synchronized Statistics saveStats(Transactions transaction) throws InvalidParseException {
 
         Statistics updatedStatsSummary;
 

@@ -4,6 +4,7 @@ import com.n26.CustomExeptions.InvalidParseException;
 import com.n26.CustomExeptions.OldTransactionException;
 import com.n26.entities.Statistics;
 import com.n26.entities.Transactions;
+import com.n26.helpers.DateTimeConverter;
 import com.n26.services.TransactionService;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +28,8 @@ public class TransactionsController {
 
     @Autowired
     private TransactionService transactionService;
+    @Autowired
+    private DateTimeConverter dateTimeConverter;
 
 
     /**
@@ -37,7 +40,7 @@ public class TransactionsController {
     @RequestMapping(value = "/transactions",method = RequestMethod.POST)
     public ResponseEntity saveTransaction(@RequestBody Transactions transaction) throws InvalidParseException, OldTransactionException {
 
-        Option<Statistics> maybeStatsSummary = transactionService.saveTransaction(transaction,Instant.now().toEpochMilli());
+        Option<Statistics> maybeStatsSummary = transactionService.saveTransaction(transaction,dateTimeConverter.currentMillis());
         return maybeStatsSummary.map(summary -> new ResponseEntity(HttpStatus.CREATED))
                 .getOrElse(new ResponseEntity(HttpStatus.NO_CONTENT));
 

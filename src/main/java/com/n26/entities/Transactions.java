@@ -19,10 +19,13 @@ public class Transactions {
     @Autowired
     private DateTimeConverter dateTimeConverter;
 
-    private static final int MAX_TIME_DIFFERENCE = 60000;
-
     private String amount;
     private String timestamp;
+
+    public Transactions(String amount, String timestamp) {
+        this.amount = amount;
+        this.timestamp = timestamp;
+    }
 
     public String getAmount() {
         return amount;
@@ -47,9 +50,9 @@ public class Transactions {
         System.out.println(currentMillis +"   ----  "+ timestamp);
         if (diff<0) {throw new InvalidParseException("Transaction Time is in future");}
 
-        if (diff>MAX_TIME_DIFFERENCE) {throw new OldTransactionException("Transaction ss older than 60 Seconds");}
+        if (diff>60000) {throw new OldTransactionException("Transaction ss older than 60 Seconds");}
 
-        return (diff > 0 && diff <= MAX_TIME_DIFFERENCE ? Option.of(this) : Option.none());
+        return (diff > 0 && diff <= 60000 ? Option.of(this) : Option.none());
     }
 
 
