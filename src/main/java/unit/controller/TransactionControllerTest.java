@@ -1,10 +1,9 @@
-package com.n26.controller;
+package unit.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.n26.controllers.TransactionsController;
 import com.n26.entities.Statistics;
 import com.n26.entities.Transactions;
-import com.n26.helpers.BigDecimalSummaryStatistics;
 import com.n26.helpers.DateTimeConverter;
 import com.n26.services.TransactionService;
 
@@ -16,8 +15,6 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-
-import java.util.DoubleSummaryStatistics;
 
 import javaslang.control.Option;
 

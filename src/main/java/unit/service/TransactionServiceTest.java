@@ -1,30 +1,5 @@
-package com.n26.service;
+package unit.service;
 
-import com.n26.CustomExeptions.InvalidParseException;
-import com.n26.dao.TransactionCache;
-import com.n26.entities.Statistics;
-import com.n26.entities.Transactions;
-import com.n26.helpers.BigDecimalSummaryStatistics;
-import com.n26.helpers.DateTimeConverter;
-import com.n26.services.StatisticsService;
-import com.n26.services.TransactionService;
-
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
-
-
-import java.util.DoubleSummaryStatistics;
-
-import javaslang.control.Option;
-
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 //
 //@RunWith(MockitoJUnitRunner.class)
 public class TransactionServiceTest {

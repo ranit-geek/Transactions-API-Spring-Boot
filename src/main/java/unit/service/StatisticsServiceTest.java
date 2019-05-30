@@ -1,4 +1,4 @@
-package com.n26.service;
+package unit.service;
 
 public class StatisticsServiceTest {
 }
