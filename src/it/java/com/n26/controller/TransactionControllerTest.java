@@ -1,4 +1,4 @@
-package unit.controller;
+package com.n26.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.n26.controllers.TransactionsController;
