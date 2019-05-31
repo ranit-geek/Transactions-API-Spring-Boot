@@ -15,7 +15,6 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.util.concurrent.locks.ReentrantLock;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -23,8 +22,9 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class StatisticsService {
 
+
     @Autowired
-    private TransactionCache statsCacheService;
+    private TransactionCache txnCacheService;
     @Autowired
     private DateTimeConverter timeHelperUtility;
     @Autowired
@@ -33,7 +33,7 @@ public class StatisticsService {
     private BigDecimalConverter bigDecimalConverter;
 
     public Statistics getSummary() {
-        if (statsCacheService.isCacheEmpty())
+        if (txnCacheService.isCacheEmpty())
 
             return new Statistics(new BigDecimal(0.00).setScale(2,BigDecimal.ROUND_HALF_UP),
                     new BigDecimal(0.00).setScale(2,BigDecimal.ROUND_HALF_UP),
@@ -51,12 +51,12 @@ public class StatisticsService {
 
         Statistics updatedStatsSummary;
 
-        synchronized (StatisticsService.class) {
-            statsSummary.accept(bigDecimalConverter.covertStringToBigDecimal(transaction.getAmount()));
-            updatedStatsSummary = new Statistics(statsSummary);
-            statsCacheService.insertStatsInCache(timeHelperUtility.convertToTimeStamp(transaction.getTimestamp()),
-                    bigDecimalConverter.covertStringToBigDecimal(transaction.getAmount()));
-        }
+
+        statsSummary.accept(bigDecimalConverter.covertStringToBigDecimal(transaction.getAmount()));
+        updatedStatsSummary = new Statistics(statsSummary);
+        txnCacheService.insertStatsInCache(timeHelperUtility.convertToTimeStamp(transaction.getTimestamp()),
+                bigDecimalConverter.covertStringToBigDecimal(transaction.getAmount()));
+
 
         return updatedStatsSummary;
     }
@@ -70,24 +70,15 @@ public class StatisticsService {
     public synchronized BigDecimalSummaryStatistics cleanOldStatsPerSecond() {
         long currentTimeInMilli = timeHelperUtility.currentMillis();
         log.debug("Job running to clean older transactions. current time: {}", currentTimeInMilli);
-        ReentrantLock lock = new ReentrantLock();
-        lock.lock();
-        try
-        {
-            if(statsCacheService.removeFromCache(currentTimeInMilli)){
-                synchronized (StatisticsService.class) {
-                    log.debug("ReCalculating stats summary");
-                    statsSummary = statsCacheService.aggregate();
-                }
-            }
-            else {
-                log.debug("stats older than 60 seconds not found for cleaning");
-            }
-            return statsSummary;
+        if(txnCacheService.removeFromCache(currentTimeInMilli)){
+                log.debug("ReCalculating stats summary");
+                statsSummary = txnCacheService.aggregate();
         }
-        finally {
-            lock.unlock();
+        else {
+            log.debug("stats older than 60 seconds not found for cleaning");
         }
+        return statsSummary;
+
     }
 
     public void clearStatsSummery()
